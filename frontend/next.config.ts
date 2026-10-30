@@ -1,22 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: __dirname, 
-  },
-   images: {
-    remotePatterns: [
+  async rewrites() {
+    return [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com', // Or 'uploadthing.com', etc.
+        source: "/api/:path*",
+        destination:
+          "https://backend-nutrimeals.vercel.app/api/:path*",
       },
-    ],
+    ];
   },
 };
-// frontend/next.config.js
-module.exports = {
-  allowedDevOrigins: [
-    'organisation-racks-dialog-pda.trycloudflare.com',
-  ],
-};
+
 export default nextConfig;

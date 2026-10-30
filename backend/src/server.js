@@ -17,7 +17,7 @@ import { notFound, errorHandler } from "./middleware/errorHandler.js";
 const app = express();
 const port = Number(process.env.PORT) || 5000;
 const allowedOrigins = [
-  "https://frontend-tan-gamma-68.vercel.app/",
+  "https://frontend-tan-gamma-68.vercel.app",
   "http://localhost:3000",
   process.env.CLIENT_URL,
 ];

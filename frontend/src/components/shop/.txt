@@ -1,0 +1,57 @@
+Test Visa card
+Test mode only
+
+Card number
+4111 1111 1111 1111
+ Copy
+
+Cardholder name
+
+Test Account
+
+Expiry
+
+01/39
+
+CVV
+
+123
+
+Administrator
+
+demo-admin@nutrimeals.test
+
+Password: NutriMeals#Admin2026
+
+Copy email
+
+
+Green Bowl Kitchen
+
+Mariam Hassan
+
+owner.green@nutrimeals.test
+
+Password: GreenBowl#2026
+
+Copy email
+
+
+Nile Harvest Cafe
+
+Omar Ibrahim
+
+owner.nile@nutrimeals.test
+
+Password: NileHarvest#2026
+
+Copy email
+
+
+Mediterranean Table
+
+Salma Adel
+
+owner.mediterranean@nutrimeals.test
+
+Password: MedTable#2026

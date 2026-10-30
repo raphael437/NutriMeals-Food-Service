@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  customer
+  restaurant_applicant
+  restaurant_owner
+  admin
+}
+
+enum RestaurantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  placed
+  confirmed
+  preparing
+  out_for_delivery
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+enum BillingInterval {
+  monthly
+  yearly
+}
+
+enum SubscriptionStatus {
+  pending
+  active
+  expired
+  cancelled
+  past_due
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password_hash String
+  role          Role     @default(customer)
+  phone         String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  restaurants       Restaurant[]
+  addresses         Address[]
+  orders            Order[]
+  reviews           Review[]
+  nutrition_profile NutritionProfile?
+
+  @@map("users")
+}
+
+model Restaurant {
+  id               String           @id @default(uuid())
+  owner_id         String
+  name             String
+  description      String?
+  address          String
+  phone            String?
+  status           RestaurantStatus @default(PENDING)
+  rejection_reason String?
+  reviewed_at      DateTime?
+  is_open          Boolean          @default(false)
+  cover_image      String?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @default(now()) @updatedAt
+
+  owner         User                     @relation(fields: [owner_id], references: [id])
+  menu_items    MenuItem[]
+  orders        Order[]
+  reviews       Review[]
+  subscriptions RestaurantSubscription[]
+
+  @@index([owner_id])
+  @@index([status, created_at])
+  @@map("restaurants")
+}
+
+model MenuItem {
+  id            String  @id @default(uuid())
+  restaurant_id String
+  category      String
+  name          String
+  description   String?
+  price         Decimal @db.Decimal(10, 2)
+  image_url     String?
+  is_available  Boolean @default(true)
+
+  // Nutrition values are for one serving. Verify these values before publishing.
+  calories     Int      @default(0)
+  protein_g    Decimal  @default(0) @db.Decimal(7, 2)
+  carbs_g      Decimal  @default(0) @db.Decimal(7, 2)
+  fat_g        Decimal  @default(0) @db.Decimal(7, 2)
+  fiber_g      Decimal  @default(0) @db.Decimal(7, 2)
+  serving_size String?
+  ingredients  String?
+  allergens    String[] @default([])
+  dietary_tags String[] @default([])
+
+  restaurant  Restaurant  @relation(fields: [restaurant_id], references: [id])
+  order_items OrderItem[]
+
+  @@index([restaurant_id])
+  @@index([calories])
+  @@map("menu_items")
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  user_id    String
+  label      String?
+  line1      String
+  city       String
+  is_default Boolean @default(false)
+
+  user   User    @relation(fields: [user_id], references: [id])
+  orders Order[]
+
+  @@map("addresses")
+}
+
+model Order {
+  id                    String        @id @default(uuid())
+  customer_id           String
+  restaurant_id         String
+  address_id            String?
+  status                OrderStatus   @default(placed)
+  payment_status        PaymentStatus @default(pending)
+  paymob_order_id       String?
+  total                 Decimal       @db.Decimal(10, 2)
+  notes                 String?
+  estimated_delivery_at DateTime?
+  out_for_delivery_at   DateTime?
+  delivered_at          DateTime?
+  created_at            DateTime      @default(now())
+
+  customer   User        @relation(fields: [customer_id], references: [id])
+  restaurant Restaurant  @relation(fields: [restaurant_id], references: [id])
+  address    Address?    @relation(fields: [address_id], references: [id])
+  items      OrderItem[]
+  review     Review?
+
+  @@index([restaurant_id, status])
+  @@index([customer_id, created_at])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  order_id       String
+  menu_item_id   String
+  quantity       Int
+  price_at_order Decimal @db.Decimal(10, 2)
+
+  // Snapshot nutrition so historical orders don't change if the meal is edited later.
+  calories_at_order  Int?
+  protein_g_at_order Decimal? @db.Decimal(7, 2)
+  carbs_g_at_order   Decimal? @db.Decimal(7, 2)
+  fat_g_at_order     Decimal? @db.Decimal(7, 2)
+  fiber_g_at_order   Decimal? @db.Decimal(7, 2)
+
+  order     Order    @relation(fields: [order_id], references: [id])
+  menu_item MenuItem @relation(fields: [menu_item_id], references: [id])
+
+  @@map("order_items")
+}
+
+model NutritionProfile {
+  id                 String   @id @default(uuid())
+  user_id            String   @unique
+  daily_calorie_goal Int      @default(2000)
+  protein_goal_g     Decimal? @db.Decimal(7, 2)
+  carbs_goal_g       Decimal? @db.Decimal(7, 2)
+  fat_goal_g         Decimal? @db.Decimal(7, 2)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("nutrition_profiles")
+}
+
+model Review {
+  id            String   @id @default(uuid())
+  customer_id   String
+  restaurant_id String
+  order_id      String?  @unique
+  rating        Int
+  comment       String?
+  created_at    DateTime @default(now())
+
+  customer   User       @relation(fields: [customer_id], references: [id])
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  order      Order?     @relation(fields: [order_id], references: [id])
+
+  @@index([restaurant_id, created_at])
+  @@map("reviews")
+}
+
+model SubscriptionPlan {
+  id               String          @id @default(uuid())
+  name             String          @unique
+  description      String?
+  price            Decimal         @db.Decimal(10, 2)
+  currency         String          @default("EGP")
+  billing_interval BillingInterval
+  is_active        Boolean         @default(true)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @default(now()) @updatedAt
+
+  subscriptions RestaurantSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model RestaurantSubscription {
+  id                String             @id @default(uuid())
+  restaurant_id     String
+  plan_id           String
+  price_at_purchase Decimal            @db.Decimal(10, 2)
+  currency          String             @default("EGP")
+  status            SubscriptionStatus @default(pending)
+  starts_at         DateTime?
+  ends_at           DateTime?
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @default(now()) @updatedAt
+
+  restaurant Restaurant       @relation(fields: [restaurant_id], references: [id])
+  plan       SubscriptionPlan @relation(fields: [plan_id], references: [id])
+
+  @@index([restaurant_id, status])
+  @@index([plan_id])
+  @@index([ends_at])
+  @@map("restaurant_subscriptions")
+}

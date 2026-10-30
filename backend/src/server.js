@@ -56,6 +56,16 @@ app.use("/api/admin", adminRoutes);
 // Payment checkout and Paymob webhook
 app.use("/api/payments", paymentRoutes);
 
+// API homepage
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "NutriMeals API is running",
+  });
+});
+
+
+
 // Keep 404 and error handling after every router.
 app.use(notFound);
 app.use(errorHandler);

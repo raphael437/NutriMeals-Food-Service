@@ -54,13 +54,13 @@ function createToken(user) {
     expiresIn: process.env.JWT_EXPIRES_IN || "1d",
   });
 }
-
 function setAuthCookie(res, token) {
   const production = process.env.NODE_ENV === "production";
+
   res.cookie("jwt", token, {
     httpOnly: true,
     secure: production,
-    sameSite: production ? "none" : "lax",
+    sameSite: "lax",
     maxAge: 24 * 60 * 60 * 1000,
     path: "/",
   });

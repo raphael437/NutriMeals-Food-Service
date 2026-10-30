@@ -185,18 +185,18 @@ export async function login(req, res, next) {
     return next(error);
   }
 }
-
 export async function logout(_req, res) {
   const production = process.env.NODE_ENV === "production";
+
   res.clearCookie("jwt", {
     httpOnly: true,
     secure: production,
-    sameSite: production ? "none" : "lax",
+    sameSite: "lax",
     path: "/",
   });
+
   return res.json({ message: "Logged out successfully." });
 }
-
 export async function getMe(req, res, next) {
   try {
     // Re-fetch current data so a changed role/status is reflected immediately.

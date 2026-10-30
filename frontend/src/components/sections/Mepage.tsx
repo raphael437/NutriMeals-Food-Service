@@ -180,6 +180,7 @@ export default function MePage() {
       "Manage your restaurant, keep your menu updated, and follow incoming orders.",
     admin:
       "Access marketplace administration and monitor the NutriMeals platform.",
+    restaurant_applicant: "Restaurant Applicant",
   };
 
   return (

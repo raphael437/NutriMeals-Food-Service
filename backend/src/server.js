@@ -17,7 +17,9 @@ import { notFound, errorHandler } from "./middleware/errorHandler.js";
 const app = express();
 const port = Number(process.env.PORT) || 5000;
 const allowedOrigins = [
-  process.env.CLIENT_URL || "http://localhost:3000",
+  "https://frontend-seven-psi-p8b2fdn1km.vercel.app",
+  "http://localhost:3000",
+  process.env.CLIENT_URL,
 ];
 
 const corsOptions = {
